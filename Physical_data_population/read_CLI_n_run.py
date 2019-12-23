@@ -18,7 +18,8 @@ args = parser.parse_args()
 """
 import argparse
 from Physical_data_population.read_configuration import *
-from Physical_data_population.physical_data_population import *
+# from Physical_data_population.physical_data_population import *
+from Physical_data_population.physical_data_population_sd import *
 
 
 def run_physical_data_population(config_path_p):

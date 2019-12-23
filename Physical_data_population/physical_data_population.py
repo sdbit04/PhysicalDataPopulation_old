@@ -106,7 +106,7 @@ class DataProcessor(object):
 
         planner_object = self.data_reader_ob.read_planner_file(input_planner_file_path)
         sd_object = self.data_reader_ob.read_sd_antennas_file(input_sd_file_path)
-        print(sd_object)
+        # print(sd_object)
         #Here the planner_object and sd_object are dictonary
         profile_root_path = profile_root_path_p
         profile_reader = ProfileReader(profile_root_path)
