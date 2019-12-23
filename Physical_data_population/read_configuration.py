@@ -15,7 +15,7 @@ def read_configuration(config_path_p):
             "planning_file" :"D:\\Input_data_deep\\Planning_input.txt",
              "input_type":"csv",
              "input_delimiter" :"\\t",
-             "out_put_data_dict_dir" :"D:\\out_dir\\outfile1.txt",
+             "out_put_data_dict_dir" :"D:\\out_dir",
              "profile_root_path": "D:\\Input_data_deep\\Ant Model"
             }""")
             time.sleep(1)
@@ -38,7 +38,7 @@ def read_configuration(config_path_p):
                             "planning_file" :"D:\\Input_data_deep\\Planning_input.txt",
                             "input_type":"csv",
                             "input_delimiter" :"\\t",
-                            "out_put_data_dict_dir" :"D:\\out_dir\\outfile1.txt",
+                            "out_put_data_dict_dir" :"D:\\out_dir",
                             "profile_root_path": "D:\\Input_data_deep\\Ant Model"
                         }""")
                 time.sleep(1)
