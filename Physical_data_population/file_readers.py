@@ -1,125 +1,102 @@
 import csv
-from collections import OrderedDict
-#6677-EOR_18FD10_JKP-05_SR_A
-
-# od = OrderedDict(a=1, b=3, c=5)
-# print(od)
-
-def validate_fields(csv_sd_planner_path):
-    SD_fields_used_to_create_key = ['RNC Id','Sector Name']
-    SD_fields_need_to_update = ['NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
-                                'Height', 'Mechanical DownTilt', 'Azimuth']
-    SD_fields_need_to_update.extend(SD_fields_used_to_create_key)
-    print("Following fields should be into the input SD, and planner .csv files = {}".format(SD_fields_need_to_update))
-    with open(csv_sd_planner_path, 'r') as sd_object:
-        top_row = sd_object.readline().split('\t')
-        print("Fields name of {} are {}".format(csv_sd_planner_path, top_row))
-        for field in SD_fields_need_to_update:
-            if field in top_row:
-                pass
-            else:
-                raise ValueError("Field name {} not present into {}".format(field, csv_sd_planner_path))
 
 
-def read_csv_sd(csv_sd_path, separator):
-    """
-    read planner file and return a dictionary having RNC-ID and Sector-name as key for each row of the input csv
-    :param csv_sd_path:
-    :param separator:
-    :return:
-    """
-    sd_dict_out = {}
-    with open(csv_sd_path, mode='r', encoding='utf-8') as sd_ob:
-        # sd_dict = csv.DictReader(sd_ob, delimiter='\t')
-        sd_dict = csv.DictReader(sd_ob, delimiter=separator)
-        for row in sd_dict:
-            # with open(r'D:\D_drive_BACKUP\Study\PycharmProjects\PhysicalDataPopulation\output\outfile_sd', 'a') as in_sd:
-            #     print(row, file=in_sd)
-            rnc_id_sector_key = "{}-{}".format(row['RNC Id'], row['Sector Name'])
-            sd_dict_out[rnc_id_sector_key]=row
-        return sd_dict_out
+lte_carrier = \
+    "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\lte-carriers.txt"
 
 
-def read_csv_planner(csv_planner_path, separator):
-    """
-    read planner file and return a dictionary having RNC-ID and Sector-name as key for each row of the input csv
-    :param csv_planner_path:
-    :param separator:
-    :return:
-    """
-    planner_dict_out = {}
-    with open(csv_planner_path, mode='r', encoding='utf-8') as sd_ob:
-        # sd_dict = csv.DictReader(sd_ob, delimiter='\t')
-        sd_dict = csv.DictReader(sd_ob, delimiter=separator)
-        for row in sd_dict:
-            rnc_id_sector_key = "{}-{}".format(row['RNC Id'], row['Sector Name'])
-            # Insert data into dict, having rnc_id_sector_key as key for each top level dict item
-            planner_dict_out[rnc_id_sector_key]=row
-        return planner_dict_out
+class AntennaDataReader(object):
 
+    def __init__(self, input_type, input_delimiter='\t'):
+        self.input_file_type = input_type
+        self.input_file_dilimiter = input_delimiter
 
-def update_sd_by_planner_step1(planner_object_p, sd_object_p):
-    sd_ob_out = {}
-    n = 0
-    # travers through planner file
-    # Here I am changing the reference variable only, and referring the same object. Not good practice, I will update.
-    planner_object = planner_object_p
-    sd_object = sd_object_p
-
-    for planner_rnc_sector_key in planner_object.keys():
-        # take a key from planner-ob
-        try:
-            # search for the key at sd-ob
-            sd_input = sd_object[planner_rnc_sector_key]
-        except KeyError:
-            pass
+    def __validate_fields(self, csv_sd_planner_path):
+        SD_fields_used_to_create_key = ['RNC Id', 'Sector Name']
+        SD_fields_need_to_update = ['NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
+                                    'Height', 'Mechanical DownTilt', 'Azimuth']
+        planner_fields_to_get_profile = ['Antenna Model', 'Antenna Tilt-Electrical']
+        #TODO : Need validate planner fields -> planner_fields_to_get_profile
+        SD_fields_need_to_update.extend(SD_fields_used_to_create_key)
+        if self.input_file_type == 'csv':
+            with open(csv_sd_planner_path, 'r') as sd_object:
+                top_row = sd_object.readline().split(self.input_file_dilimiter)
+                # we cant use sd_object.readline() to read the top line again, as it has iterate over already
+                print("Fields name of {} are {}".format(csv_sd_planner_path, top_row))
+                for field in SD_fields_need_to_update:
+                    if field in top_row:
+                        pass
+                    else:
+                        print("Following fields should be into the input SD, and planner .csv files = {}".format(
+                            SD_fields_need_to_update))
+                        raise ValueError("Field name {} not present into {}".format(field, csv_sd_planner_path))
         else:
-            # Now I have corresponding records from planner and SD, they are OrderDict object
-            planner_input_row = planner_object[planner_rnc_sector_key]
-            # print(type(planner_input_row))
-            # print("planner_input_row = {}".format(planner_input_row))
-            sd_input_row = sd_input
-            # print(type(sd_input_row))
-            # print("sd_input_row = {}".format(sd_input_row))
-            # print("*********************")
-            SD_fields_need_to_update = ['NodeB Longitude','NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
-                                        'Height', 'Mechanical DownTilt', 'Azimuth']
-            sd_input_row['NodeB Longitude']=planner_input_row['NodeB Longitude']
-            sd_input_row['NodeB Latitude'] = planner_input_row['NodeB Latitude']
-            sd_input_row['Antenna Longitude'] = planner_input_row['Antenna Longitude']
-            sd_input_row['Antenna Latitude'] = planner_input_row['Antenna Latitude']
-            sd_input_row['Height'] = planner_input_row['Height']
-            sd_input_row['Mechanical DownTilt'] = planner_input_row['Mechanical DownTilt']
-            sd_input_row['Azimuth'] = planner_input_row['Azimuth']
-            # print("sd_input_row_updated = {}".format(sd_input_row))
-            sd_ob_out[n] = sd_input_row
-            n+=1
-    return sd_ob_out
+            raise NotImplementedError("Only csv format supported")
 
+    def __read_csv_sd(self, csv_sd_path):
+        """
+        read planner file and return a dictionary having RNC-ID and Sector-name as key for each row of the input csv
+        :param csv_sd_path:
+        :param separator:
+        :return:
+        """
+        sd_dict_out = {}
+        with open(csv_sd_path, mode='r', encoding='utf-8') as sd_ob:
+            # sd_dict = csv.DictReader(sd_ob, delimiter='\t')
+            sd_dict = csv.DictReader(sd_ob, delimiter=self.input_file_dilimiter)
+            for row in sd_dict:
+                rnc_id_sector_key = "{}-{}".format(row['RNC Id'], row['Sector Name'])
+                sd_dict_out[rnc_id_sector_key] = row
+            return sd_dict_out
 
-# Example of above object
-# {'6696-EOR_23TD10_3398_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCE3398RAYGADATD'), ('NodeB Id', '803388'), ('ENB ID', '803388'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3398_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3398_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6696-EOR_23TD10_3398_SS': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCE3398RAYGADATD'), ('NodeB Id', '803388'), ('ENB ID', '803388'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3398_SS'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3398_SS/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6696-EOR_23TD10_3398_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCE3398RAYGADATD'), ('NodeB Id', '803388'), ('ENB ID', '803388'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3398_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3398_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6696-EOR_23TD10_3398_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCE3398RAYGADATD'), ('NodeB Id', '803388'), ('ENB ID', '803388'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3398_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3398_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6696-EOR_23TD10_3401_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCEAPABADAPATD'), ('NodeB Id', '803401'), ('ENB ID', '803401'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3401_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3401_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6696-EOR_23TD10_3401_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCEAPABADAPATD'), ('NodeB Id', '803401'), ('ENB ID', '803401'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3401_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3401_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6696-EOR_23TD10_3401_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6696'), ('RNC Id', '6696'), ('NodeB Name', 'ODZZQNSCEAPABADAPATD'), ('NodeB Id', '803401'), ('ENB ID', '803401'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3401_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3401_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3445_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEASHKASHIPTD'), ('NodeB Id', '803445'), ('ENB ID', '803445'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3445_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3445_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3445_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEASHKASHIPTD'), ('NodeB Id', '803445'), ('ENB ID', '803445'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3445_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3445_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3445_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEASHKASHIPTD'), ('NodeB Id', '803445'), ('ENB ID', '803445'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3445_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3445_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3446_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEIKITIKIRITD'), ('NodeB Id', '803446'), ('ENB ID', '803446'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3446_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3446_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3446_SS': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEIKITIKIRITD'), ('NodeB Id', '803446'), ('ENB ID', '803446'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3446_SS'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3446_SS/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3446_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEIKITIKIRITD'), ('NodeB Id', '803446'), ('ENB ID', '803446'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3446_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3446_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3446_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEIKITIKIRITD'), ('NodeB Id', '803446'), ('ENB ID', '803446'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3446_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3446_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3446_UU': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCEIKITIKIRITD'), ('NodeB Id', '803446'), ('ENB ID', '803446'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3446_UU'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3446_UU/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]),
-# '2223-EOR_23TD10_3449_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '2223'), ('RNC Id', '2223'), ('NodeB Name', 'ODZZQNSCEUSHDUSHMNTD'), ('NodeB Id', '803449'), ('ENB ID', '803449'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3449_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3449_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '2223-EOR_23TD10_3449_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '2223'), ('RNC Id', '2223'), ('NodeB Name', 'ODZZQNSCEUSHDUSHMNTD'), ('NodeB Id', '803449'), ('ENB ID', '803449'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3449_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3449_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '2223-EOR_23TD10_3449_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '2223'), ('RNC Id', '2223'), ('NodeB Name', 'ODZZQNSCEUSHDUSHMNTD'), ('NodeB Id', '803449'), ('ENB ID', '803449'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3449_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3449_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3680_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCE3680LAKHMIPURTD'), ('NodeB Id', '803448'), ('ENB ID', '803448'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3680_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3680_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3680_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCE3680LAKHMIPURTD'), ('NodeB Id', '803448'), ('ENB ID', '803448'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3680_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3680_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6677-EOR_23TD10_3680_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6677'), ('RNC Id', '6677'), ('NodeB Name', 'ODZZQNSCE3680LAKHMIPURTD'), ('NodeB Id', '803448'), ('ENB ID', '803448'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3680_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3680_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '5531-EOR_23TD10_3690_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '5531'), ('RNC Id', '5531'), ('NodeB Name', 'EORTD203690'), ('NodeB Id', '803526'), ('ENB ID', '803526'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3690_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3690_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '5531-EOR_23TD10_3690_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '5531'), ('RNC Id', '5531'), ('NodeB Name', 'EORTD203690'), ('NodeB Id', '803526'), ('ENB ID', '803526'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3690_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3690_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '5531-EOR_23TD10_3690_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '5531'), ('RNC Id', '5531'), ('NodeB Name', 'EORTD203690'), ('NodeB Id', '803526'), ('ENB ID', '803526'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3690_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3690_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6684-EOR_23TD10_3724_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6684'), ('RNC Id', '6684'), ('NodeB Name', 'ODZZQNSCE3724KALIMLATD'), ('NodeB Id', '803695'), ('ENB ID', '803695'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3724_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3724_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6684-EOR_23TD10_3724_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6684'), ('RNC Id', '6684'), ('NodeB Name', 'ODZZQNSCE3724KALIMLATD'), ('NodeB Id', '803695'), ('ENB ID', '803695'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3724_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3724_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6684-EOR_23TD10_3724_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6684'), ('RNC Id', '6684'), ('NodeB Name', 'ODZZQNSCE3724KALIMLATD'), ('NodeB Id', '803695'), ('ENB ID', '803695'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3724_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3724_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6668-EOR_23TD10_3792-02_S': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6668'), ('RNC Id', '6668'), ('NodeB Name', 'ODZZQNSCESBSSNBRSNTD'), ('NodeB Id', '802054'), ('ENB ID', '802054'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3792-02_S'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3792-02_S/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6668-EOR_23TD10_3792-02_T': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6668'), ('RNC Id', '6668'), ('NodeB Name', 'ODZZQNSCESBSSNBRSNTD'), ('NodeB Id', '802054'), ('ENB ID', '802054'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3792-02_T'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3792-02_T/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')]), '6668-EOR_23TD10_3792-02_U': OrderedDict([('Technology', 'LTE'), ('RNC Name', '6668'), ('RNC Id', '6668'), ('NodeB Name', 'ODZZQNSCESBSSNBRSNTD'), ('NodeB Id', '802054'), ('ENB ID', '802054'), ('NodeB Longitude', '0'), ('NodeB Latitude', '0'), ('Sector Name', 'EOR_23TD10_3792-02_U'), ('Active', 'TRUE'), ('Noise Figure', '5'), ('AntennaID', 'EOR_23TD10_3792-02_U/1'), ('Antenna Model', 'dummy/dummy'), ('Sector Keywords', ''), ('Antenna Longitude', '0'), ('Antenna Latitude', '0'), ('Height', 'N/A'), ('Mechanical DownTilt', 'N/A'), ('Azimuth', 'N/A'), ('Downlink Loss', '0'), ('Uplink Loss', '0'), ('RTT fix A Coefficient', '0'), ('RTT fix B Coefficient', '0'), ('RET ID', ''), ('In Building', 'FALSE'), ('Cable Lengths(Calculated)', ''), ('Sector Height Level(Calculated)', 'Overground')])}
-# print(sd_ob)
-# print(planner_ob)
+    def __read_csv_planner(self, csv_planner_path):
+        """
+        read planner file and return a dictionary having RNC-ID and Sector-name as key for each row of the input csv
+        :param csv_planner_path:
+        :param separator:
+        :return:
+        """
+        planner_dict_out = {}
+        try:
+            with open(csv_planner_path, mode='r') as sd_ob:
+                #, encoding='utf-8'
+                # sd_dict = csv.DictReader(sd_ob, delimiter='\t')
+                sd_dict = csv.DictReader(sd_ob, delimiter=self.input_file_dilimiter)
+                for row in sd_dict:
+                    rnc_id_sector_key = "{}-{}".format(row['RNC Id'], row['Sector Name'])
+                    # Insert data into dict, having rnc_id_sector_key as key for each top level dict item
+                    planner_dict_out[rnc_id_sector_key] = row
+                return planner_dict_out
+        except UnicodeDecodeError:
+            with open(csv_planner_path, mode='r', encoding='utf-8') as sd_ob:
+                sd_dict = csv.DictReader(sd_ob, delimiter=self.input_file_dilimiter)
+                for row in sd_dict:
+                    rnc_id_sector_key = "{}-{}".format(row['RNC Id'], row['Sector Name'])
+                    # Insert data into dict, having rnc_id_sector_key as key for each top level dict item
+                    planner_dict_out[rnc_id_sector_key] = row
+                return planner_dict_out
 
-# temp_out_dict = update_sd_by_planner_step1(planner_ob, sd_ob)
-#
-# sample_out = temp_out_dict[0]
-# out_csv_fields = list(sample_out.keys())
-# print(out_csv_fields)
-#
-# with open(r'D:\D_drive_BACKUP\Study\PycharmProjects\PhysicalDataPopulation\output\outfile.txt', 'a', newline='') as out:
-#     # Create an writer object for the file
-#     dict_writers = csv.DictWriter(f=out, fieldnames=out_csv_fields, delimiter='\t')
-#     dict_writers.writeheader()
-#     for row in temp_out_dict.values():
-#         dict_writers.writerow(row)
+    def read_sd_antennas_file(self, sd_file_path):
+        if self.input_file_type == 'csv':
+            self.__validate_fields(sd_file_path)
+            sd_dict_out = self.__read_csv_sd(sd_file_path)
+            return sd_dict_out
+        else:
+            raise NotImplementedError("Only csv format supported")
 
+    def read_planner_file(self, planner_file_path):
+        if self.input_file_type == 'csv':
+            self.__validate_fields(planner_file_path)
+            planner_dict_out = self.__read_csv_planner(planner_file_path)
+            return planner_dict_out
+        else:
+            raise NotImplementedError("Only csv format supported")
 
-
-
-
-
-
+    def __read_lte_carrier(self, lte_carrier_path):
+        try:
+            with open(lte_carrier_path, 'r') as lte_carrier_ob:
+                lte_carrier_dict = csv.DictReader(lte_carrier_ob, delimiter=self.input_file_dilimiter)
+                pass
+        except:
+            pass
 
