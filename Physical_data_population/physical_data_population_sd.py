@@ -1,19 +1,13 @@
-import csv
 from Physical_data_population.profile_reader import *
 from Physical_data_population.file_readers import *
 
 
-
-
-
-
-
 class DataProcessor(object):
 
-    def __init__(self, input_type, input_delimiter='\t'):
+    def __init__(self, technology):
         # I am creating only one type  of DataReader object considering we support only csv now,
         # also we have only one type param input_type
-        self.data_reader_ob = AntennaDataReader(input_type, input_delimiter)
+        self.data_reader_ob = AntennaDataReader(technology=technology)
         # We can have another data reader object if planner and SD are of different type
         # self.data_planner_object = self.data_reader_ob.read_planner_file()
 
