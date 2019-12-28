@@ -8,6 +8,7 @@ class DataProcessor(object):
         # I am creating only one type  of DataReader object considering we support only csv now,
         # also we have only one type param input_type
         self.data_reader_ob = AntennaDataReader(technology=technology)
+        rnc_id = self.data_reader_ob.SD_fields_need_to_update[0]
         # We can have another data reader object if planner and SD are of different type
         # self.data_planner_object = self.data_reader_ob.read_planner_file()
 
@@ -15,7 +16,6 @@ class DataProcessor(object):
         sd_ob_out = {}
         n = 0
         # travers through planner file
-
         planner_object = self.data_reader_ob.read_planner_file(input_planner_file_path)
         sd_object = self.data_reader_ob.read_sd_antennas_file(input_sd_file_path)
         # print(sd_object)
@@ -42,27 +42,24 @@ class DataProcessor(object):
                 # print(type(sd_input_row))
                 # print("sd_input_row = {}".format(sd_input_row))
                 # print("*********************")
-                SD_fields_need_to_update = ['NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude',
-                                            'Antenna Latitude',
-                                            'Height', 'Mechanical DownTilt', 'Azimuth']
-                sd_input_row['NodeB Longitude'] = planner_input_row['NodeB Longitude']
-                sd_input_row['NodeB Latitude'] = planner_input_row['NodeB Latitude']
-                sd_input_row['Antenna Longitude'] = planner_input_row['Antenna Longitude']
-                sd_input_row['Antenna Latitude'] = planner_input_row['Antenna Latitude']
-                sd_input_row['Height'] = planner_input_row['Height']
-                sd_input_row['Mechanical DownTilt'] = planner_input_row['Mechanical DownTilt']
-                sd_input_row['Azimuth'] = planner_input_row['Azimuth']
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = planner_input_row[self.data_reader_ob.planner_fields_required[2]]
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = planner_input_row[self.data_reader_ob.planner_fields_required[3]]
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = planner_input_row[self.data_reader_ob.planner_fields_required[4]]
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[5]] = planner_input_row[self.data_reader_ob.planner_fields_required[5]]
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[6]] = planner_input_row[self.data_reader_ob.planner_fields_required[6]]
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[7]] = planner_input_row[self.data_reader_ob.planner_fields_required[7]]
+                sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = planner_input_row[self.data_reader_ob.planner_fields_required[8]]
                 # print("sd_input_row_updated = {}".format(sd_input_row))
                 # We populate antenna/profile at antenna-Model field
-                antenna_model = planner_input_row['Antenna Model']
-                antenna_e_tilt = planner_input_row['Antenna Tilt-Electrical']
+                antenna_model = planner_input_row[self.data_reader_ob.planner_fields_required[9]]
+                antenna_e_tilt = planner_input_row[self.data_reader_ob.planner_fields_required[10]]
                 antenna_model_antenna_e_tilt_key = "{}/{}".format(antenna_model, antenna_e_tilt)
                 try:
                     antenna_model_profile = antenna_model_vs_profile_map[antenna_model_antenna_e_tilt_key]
                 except KeyError:
                     print("Profile {} was not found into source of profiles files".format(antenna_model_antenna_e_tilt_key))
                 else:
-                    sd_input_row['Antenna Model'] = antenna_model_profile
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = antenna_model_profile
                     sd_ob_out[n] = sd_input_row
                     n += 1
         return sd_ob_out
@@ -82,6 +79,7 @@ def data_writer(temp_out_dict, out_put_file_p):
         print("The list of fields into the output antennas.txt file{}".format(out_csv_fields))
         output_file = "antennas{}.txt".format(str(datetime.datetime.utcnow()).split(' ')[0])
         out_put_file = os.path.join(out_put_file_p, output_file)
+        print("output file name is {}".format(out_put_file))
         with open(out_put_file, 'w') as out_a:
             pass
 

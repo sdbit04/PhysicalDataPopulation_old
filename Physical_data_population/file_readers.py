@@ -1,7 +1,5 @@
 import csv
-
-lte_carrier = \
-    "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\lte-carriers.txt"
+from pyxlsb import *
 
 
 class AntennaDataReader(object):
@@ -9,59 +7,41 @@ class AntennaDataReader(object):
     def __init__(self, technology):
         self.technology = technology
         if self.technology.upper() == 'UMTS':
-            self.SD_fields_used_to_create_key = ['RNC Id', 'Sector Name']
-            self.SD_fields_need_to_update = ['RNC Id', 'Sector Name','NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
-                                    'Height', 'Mechanical DownTilt', 'Azimuth']
-            self.planner_fields_required = ['RNC Id', 'Sector Name']
+            # Note - Please don't insert any value into the below lists, the index of the fields are used in program
+            self.SD_fields_need_to_update = ['RNC Id', 'Sector Name', 'NodeB Longitude', 'NodeB Latitude',
+                                             'Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt',
+                                             'Azimuth']
+            # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
+            # in the below list will be changed
+            self.planner_fields_required = ['RNC Id', 'Sector Name', 'eNodeB Longitude', 'eNodeB Latitude',
+                                            'Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt',
+                                            'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical']
             self.lte_carrier_fields_required = ['RNC', 'Sector Name']
+            self.cgi_file_fields_required = []
 
         elif self.technology.upper() == 'LTE':
-            self.SD_fields_used_to_create_key = ['RNC Id', 'Sector Name']
-            self.SD_fields_need_to_update = ['RNC Id', 'Sector Name','NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
-                                    'Height', 'Mechanical DownTilt', 'Azimuth']
-            self.planner_fields_required = []
-            self.lte_carrier_fields_required = []
+            # Note - Please don't insert any value into the below lists, the index of the fields are used in program
+            self.SD_fields_need_to_update = ['RNC Id', 'Sector Name', 'NodeB Longitude', 'NodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model']
+            # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
+            # in the below list will be changed
+            self.planner_fields_required = ['TAC id', 'Sector Name', 'eNodeB Longitude', 'eNodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical']
+
+            self.lte_carrier_fields_required = ['TAC', 'Sector Name', 'MCC', 'MNC', 'Sector Carrier Name']
+            self.cgi_file_fields_required = ['LTE CGI', 'Latitude', 'Longitude', 'Antenna Height (m)',
+                                             'Antenna Tilt-Mechanical', 'Antenna Tilt-Electrical',
+                                             'Status Active / Locked', 'Band', 'Antenna  Model', 'Azimuth',
+                                             'Site Type']
         else:
             raise ("{} technology is not supported ".format(self.technology))
 
     def __validate_fields(self, csv_sd_planner_path):
-        csv_sd_planner_path = csv_sd_planner_path
+        # csv_sd_planner_path = csv_sd_planner_path
         if self.technology.upper() == 'UMTS':
             # check if all the fields at SD_fields_need_to_update are into the file
             return True
         elif self.technology.upper() == 'LTE':
             # check if all the fields at SD_fields_need_to_update are into the file
             return True
-    #     if self.technology.upper() == 'UMTS':
-    #         SD_fields_used_to_create_key = ['RNC Id', 'Sector Name']
-    #         SD_fields_need_to_update = ['NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
-    #                                 'Height', 'Mechanical DownTilt', 'Azimuth']
-    #         SD_fields_need_to_update.extend(SD_fields_used_to_create_key)
-    #     elif self.technology.upper() == 'LTE':
-    #         SD_fields_used_to_create_key = ['RNC Id', 'Sector Name']
-    #         SD_fields_need_to_update = ['NodeB Longitude', 'NodeB Latitude', 'Antenna Longitude', 'Antenna Latitude',
-    #                                     'Height', 'Mechanical DownTilt', 'Azimuth']
-    #         SD_fields_need_to_update.extend(SD_fields_used_to_create_key)
-    #     else:
-    #         raise ("{} is not supported, use LTE, or UMTS ".format(self.technology))
-    #
-    #     # planner_fields_to_get_profile = ['Antenna Model', 'Antenna Tilt-Electrical']
-    #     # TODO : Need validate planner fields -> planner_fields_to_get_profile
-    #
-    #     if self.input_file_type == 'csv':
-    #         with open(csv_sd_planner_path, 'r') as sd_object:
-    #             top_row = sd_object.readline().split(self.input_file_dilimiter)
-    #             # we cant use sd_object.readline() to read the top line again, as it has iterate over already
-    #             print("Fields name of {} are {}".format(csv_sd_planner_path, top_row))
-    #             for field in SD_fields_need_to_update:
-    #                 if field in top_row:
-    #                     pass
-    #                 else:
-    #                     print("Following fields should be into the input SD, and planner .csv files = {}".format(
-    #                         SD_fields_need_to_update))
-    #                     raise ValueError("Field name {} not present into {}".format(field, csv_sd_planner_path))
-    #     else:
-    #         raise NotImplementedError("Only csv format supported")
 
     def __read_csv_sd(self, csv_sd_path):
         """
@@ -76,8 +56,8 @@ class AntennaDataReader(object):
             # As we know the delimiter for parsed SD antennas.txt is tab, So I made it hard coded
             sd_dict = csv.DictReader(sd_ob, delimiter='\t')
             for row in sd_dict:
-                rnc_id_sector_key = "{}-{}".format(row[self.SD_fields_used_to_create_key[0]],
-                                                   row[self.SD_fields_used_to_create_key[1]])
+                rnc_id_sector_key = "{}-{}".format(row[self.SD_fields_need_to_update[0]],
+                                                   row[self.SD_fields_need_to_update[1]])
                 sd_dict_out[rnc_id_sector_key] = row
             return sd_dict_out
 
@@ -115,14 +95,14 @@ class AntennaDataReader(object):
             sd_dict_out = self.__read_csv_sd(sd_file_path)
             return sd_dict_out
         else:
-            raise NotImplementedError("Input file was not validated")
+            raise NotImplementedError("SD input file was not valid, should be in tab separated csv file")
 
     def read_planner_file(self, planner_file_path):
         if self.__validate_fields(planner_file_path):
             planner_dict_out = self.__read_csv_planner(planner_file_path)
             return planner_dict_out
         else:
-            raise NotImplementedError("Input file was not validated")
+            raise NotImplementedError("Planner Input file was not valid, should be in tab separated csv file")
 
     def read_lte_carrier(self, lte_carrier_path):
         lte_carrier_dict_out = {}
@@ -139,8 +119,67 @@ class AntennaDataReader(object):
         except:
             raise Exception("Lte_carrier file was not readable")
 
+    def read_gsi_file(self, cgi_file_path):
+        file_path = cgi_file_path
+        col_name_position = {}
+        data_dict = {}
+        with open_workbook(file_path) as GSI_file:
+            sheet = GSI_file.get_sheet(1)  # Index of first row is 1
+            rows_iter = iter(sheet.rows())
+            head_row = next(rows_iter)  # Header record only
+            for cell in head_row:  # Speed linearly depends on number of columns into the GSI file
+                if cell.v == self.cgi_file_fields_required[0]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[1]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[2]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[3]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[4]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[5]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[6]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[7]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[8]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[9]:
+                    col_name_position[cell.v] = cell.c
+                elif str(cell.v).__contains__(self.cgi_file_fields_required[10]):
+                    print(str(cell.v))
+                    col_name_position[self.cgi_file_fields_required[10]] = cell.c
+                else:
+                    pass
+            # Following statement will print the header with their column position as key:value pair
+            print(col_name_position)
+
+            for row in rows_iter:  # accessing all data rows
+                col_name_data = {}  # dict for each data row
+                # print(row[3])  ==>  Cell(r=1, c=3, v='EKOL0000KONG')
+
+                for col_name, position in col_name_position.items():  # Seems a quadratic, but this iteration is
+                    # constant in count
+                    cell = row[position]  # getting the cell using cell_position as an index of row, it is a constant
+                    # time operation, output like -> Cell(r=1, c=3, v='EKOL0000KONG')
+                    col_name_data[col_name] = cell.v
+                data_dict["{0}".format(col_name_data[self.cgi_file_fields_required[0]])] = col_name_data
+        return data_dict
+
 
 if __name__ == "__main__":
-    reader = AntennaDataReader(technology='UMTS')
+    CGI_file = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\4G GIS Data Kolkata.xlsb"
+    lte_carrier = \
+        "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\lte-carriers.txt"
+
+    reader = AntennaDataReader(technology='LTE')
     lte_carrier_dict_out_r = reader.read_lte_carrier(lte_carrier_path=lte_carrier)
     print(lte_carrier_dict_out_r)
+
+    cgi_file_dict = reader.read_gsi_file(CGI_file)
+    with open("cgi_file.json", 'a') as cgi_out_ob:
+        print(cgi_file_dict, file=cgi_out_ob)
+
+

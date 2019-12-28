@@ -57,6 +57,6 @@ def read_configuration(config_path_p):
 
 
 if __name__ == "__main__":
-    config_path = '..\\configuration\\config_phy.ini'
+    config_path = 'config\\config_phy.ini'
     config_json_ob = read_configuration(config_path)
 

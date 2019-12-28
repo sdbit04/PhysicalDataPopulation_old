@@ -40,6 +40,7 @@ class GSIFileReader(object):
                     col_name_position['Site Type'] = cell.c
                 else:
                     pass
+            # F
             print(col_name_position)
 
             for row in rows_iter:  # accessing all data rows
