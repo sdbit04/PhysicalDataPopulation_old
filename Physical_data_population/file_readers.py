@@ -13,24 +13,27 @@ class AntennaDataReader(object):
                                              'Azimuth']
             # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
             # in the below list will be changed
+            # Note - Please don't insert any value into the below lists, the index of the fields are used in program
             self.planner_fields_required = ['RNC Id', 'Sector Name', 'eNodeB Longitude', 'eNodeB Latitude',
                                             'Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt',
                                             'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical']
+            # Note - Please don't insert any value into the below lists, the index of the fields are used in program
+            self.cgi_file_fields_required = ['LTE CGI', 'dummy', 'Longitude', 'Latitude', 'Longitude', 'Latitude',
+                                             'Antenna Height (m)', 'Antenna Tilt-Mechanical', 'Azimuth',
+                                             'Antenna  Model', 'Antenna Tilt-Electrical', 'Band',
+                                             'Status Active / Locked', 'Site Type']
             self.lte_carrier_fields_required = ['RNC', 'Sector Name']
-            self.cgi_file_fields_required = []
 
         elif self.technology.upper() == 'LTE':
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
             self.SD_fields_need_to_update = ['RNC Id', 'Sector Name', 'NodeB Longitude', 'NodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model']
             # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
             # in the below list will be changed
+            # Note - Please don't insert any value into the below lists, the index of the fields are used in program
             self.planner_fields_required = ['TAC id', 'Sector Name', 'eNodeB Longitude', 'eNodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical']
-
+            # Note - Please don't insert any value into the below lists, the index of the fields are used in program
+            self.cgi_file_fields_required = ['LTE CGI', 'dummy', 'Longitude', 'Latitude', 'Longitude', 'Latitude',                       'Antenna Height (m)', 'Antenna Tilt-Mechanical', 'Azimuth', 'Antenna  Model', 'Antenna Tilt-Electrical', 'Band', 'Status Active / Locked', 'Site Type']
             self.lte_carrier_fields_required = ['TAC', 'Sector Name', 'MCC', 'MNC', 'Sector Carrier Name']
-            self.cgi_file_fields_required = ['LTE CGI', 'Latitude', 'Longitude', 'Antenna Height (m)',
-                                             'Antenna Tilt-Mechanical', 'Antenna Tilt-Electrical',
-                                             'Status Active / Locked', 'Band', 'Antenna  Model', 'Azimuth',
-                                             'Site Type']
         else:
             raise ("{} technology is not supported ".format(self.technology))
 
@@ -177,9 +180,13 @@ if __name__ == "__main__":
     reader = AntennaDataReader(technology='LTE')
     lte_carrier_dict_out_r = reader.read_lte_carrier(lte_carrier_path=lte_carrier)
     print(lte_carrier_dict_out_r)
+    for value in lte_carrier_dict_out_r.values():
+        temp_l1 = str(value['Sector Carrier Name']).split('-')
+        print('{0}-{1}-{2}-{3}'.format(value['MCC'], value['MNC'], temp_l1[1], temp_l1[2]))
 
-    cgi_file_dict = reader.read_gsi_file(CGI_file)
-    with open("cgi_file.json", 'a') as cgi_out_ob:
-        print(cgi_file_dict, file=cgi_out_ob)
+
+    # cgi_file_dict = reader.read_gsi_file(CGI_file)
+    # with open("cgi_file.json", 'a') as cgi_out_ob:
+    #     print(cgi_file_dict, file=cgi_out_ob)
 
 
