@@ -60,9 +60,12 @@ class DataProcessor(object):
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[6]] = matching_cgi_data_input[self.data_reader_ob.cgi_file_fields_required[6]]
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[7]] = matching_cgi_data_input[self.data_reader_ob.cgi_file_fields_required[7]]
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = matching_cgi_data_input[self.data_reader_ob.cgi_file_fields_required[8]]
-                        antenna_model = matching_cgi_data_input[self.data_reader_ob.planner_fields_required[9]]
-                        antenna_e_tilt = matching_cgi_data_input[self.data_reader_ob.planner_fields_required[10]]
-                        antenna_model_antenna_e_tilt_key = "{}/{}".format(antenna_model, antenna_e_tilt)
+                        print("matching_cgi_row = {}".format(matching_cgi_data_input))
+                        print("antenna-model field name from cgi_reqired_fields = {}".format(self.data_reader_ob.cgi_file_fields_required[9]))
+                        antenna_model = matching_cgi_data_input[self.data_reader_ob.cgi_file_fields_required[9]]
+                        antenna_e_tilt = matching_cgi_data_input[self.data_reader_ob.cgi_file_fields_required[10]]
+                        band = matching_cgi_data_input[self.data_reader_ob.cgi_file_fields_required[11]]
+                        antenna_model_antenna_e_tilt_key = "{}/{}/{}".format(antenna_model, antenna_e_tilt, band)
                         try:
                             antenna_model_profile = antenna_model_vs_profile_map[antenna_model_antenna_e_tilt_key]
                         except KeyError:
@@ -90,7 +93,8 @@ class DataProcessor(object):
                 # We populate antenna/profile at antenna-Model field
                 antenna_model = planner_input_row[self.data_reader_ob.planner_fields_required[9]]
                 antenna_e_tilt = planner_input_row[self.data_reader_ob.planner_fields_required[10]]
-                antenna_model_antenna_e_tilt_key = "{}/{}".format(antenna_model, antenna_e_tilt)
+                band = planner_input_row[self.data_reader_ob.planner_fields_required[11]]
+                antenna_model_antenna_e_tilt_key = "{}/{}/{}".format(antenna_model, antenna_e_tilt, band)
                 try:
                     antenna_model_profile = antenna_model_vs_profile_map[antenna_model_antenna_e_tilt_key]
                 except KeyError:

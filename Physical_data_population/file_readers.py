@@ -30,8 +30,9 @@ class AntennaDataReader(object):
             # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
             # in the below list will be changed
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
-            self.planner_fields_required = ['TAC id', 'Sector Name', 'eNodeB Longitude', 'eNodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical']
+            self.planner_fields_required = ['TAC id', 'eNodeB Name', 'eNodeB Longitude', 'eNodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical', 'Band']
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
+            # TODO based on formula lat long calculation will be done from GIS
             self.cgi_file_fields_required = ['LTE CGI', 'dummy', 'Longitude', 'Latitude', 'Longitude', 'Latitude',                       'Antenna Height (m)', 'Antenna Tilt-Mechanical', 'Azimuth', 'Antenna  Model', 'Antenna Tilt-Electrical', 'Band', 'Status Active / Locked', 'Site Type']
             self.lte_carrier_fields_required = ['TAC', 'Sector Name', 'MCC', 'MNC', 'Sector Carrier Name']
         else:
@@ -154,6 +155,8 @@ class AntennaDataReader(object):
                 elif str(cell.v).__contains__(self.cgi_file_fields_required[10]):
                     print(str(cell.v))
                     col_name_position[self.cgi_file_fields_required[10]] = cell.c
+                elif cell.v == self.cgi_file_fields_required[11]:
+                    col_name_position[cell.v] = cell.c
                 else:
                     pass
             # Following statement will print the header with their column position as key:value pair
@@ -176,17 +179,19 @@ if __name__ == "__main__":
     CGI_file = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\4G GIS Data Kolkata.xlsb"
     lte_carrier = \
         "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\lte-carriers.txt"
+    planner_file = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Planning_input_4G.txt"
 
     reader = AntennaDataReader(technology='LTE')
-    lte_carrier_dict_out_r = reader.read_lte_carrier(lte_carrier_path=lte_carrier)
-    print(lte_carrier_dict_out_r)
-    for value in lte_carrier_dict_out_r.values():
-        temp_l1 = str(value['Sector Carrier Name']).split('-')
-        print('{0}-{1}-{2}-{3}'.format(value['MCC'], value['MNC'], temp_l1[1], temp_l1[2]))
+    # lte_carrier_dict_out_r = reader.read_lte_carrier(lte_carrier_path=lte_carrier)
+    # print(lte_carrier_dict_out_r)
+    # for value in lte_carrier_dict_out_r.values():
+    #     temp_l1 = str(value['Sector Carrier Name']).split('-')
+    #     print('{0}-{1}-{2}-{3}'.format(value['MCC'], value['MNC'], temp_l1[1], temp_l1[2]))
 
+    cgi_file_dict = reader.read_gsi_file(CGI_file)
+    with open("cgi_file.json", 'a') as cgi_out_ob:
+        print(cgi_file_dict, file=cgi_out_ob)
 
-    # cgi_file_dict = reader.read_gsi_file(CGI_file)
-    # with open("cgi_file.json", 'a') as cgi_out_ob:
-    #     print(cgi_file_dict, file=cgi_out_ob)
-
-
+    # planner_dict = reader.read_planner_file(planner_file)
+    # one_row  = planner_dict['1160-EOR_23TD20_PUR-51_B']
+    # print(one_row['Band'])

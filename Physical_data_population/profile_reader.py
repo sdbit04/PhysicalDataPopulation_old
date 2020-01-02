@@ -21,7 +21,7 @@ class ProfileReader(object):
 
     def get_band_for_a_frequency(self, frequency):
         frequency_input = frequency
-        band = 900
+        # band = 900
         if 2100 <= frequency_input <= 2199:
             band = 2100
         elif 850 <= frequency_input <= 999:
@@ -50,11 +50,10 @@ class ProfileReader(object):
                 profile_file_data_dict = self.read_profile(profile_path_abs)
                 # print(profile_file_data_dict)
                 band = self.get_band_for_a_frequency(float(profile_file_data_dict['FREQUENCY']))
-                # ELECTRICAL_TILT_band = "{}-{}".format(profile_file_data_dict['ELECTRICAL_TILT'], band)
-                # antenna_model_eTilt_combination = "{}/{}".format(model_dir, ELECTRICAL_TILT_band)
-                ELECTRICAL_TILT = "{}".format(profile_file_data_dict['ELECTRICAL_TILT'])
-                antenna_model_eTilt_combination = "{}/{}".format(model_dir, ELECTRICAL_TILT)
-
+                ELECTRICAL_TILT_band = "{}/{}".format(profile_file_data_dict['ELECTRICAL_TILT'], band)
+                antenna_model_eTilt_combination = "{}/{}".format(model_dir, ELECTRICAL_TILT_band)
+                # ELECTRICAL_TILT = "{}".format(profile_file_data_dict['ELECTRICAL_TILT'])
+                # antenna_model_eTilt_combination = "{}/{}".format(model_dir, ELECTRICAL_TILT)
                 try:
                     # just to check if there is exception to get value, we are not using value1 identifier in future.
                     value1 = antenna_model_vs_profile_map[antenna_model_eTilt_combination]
