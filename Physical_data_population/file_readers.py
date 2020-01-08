@@ -1,16 +1,17 @@
 import csv
 from pyxlsb import *
+import xlrd
 
 
 class AntennaDataReader(object):
 
-    def __init__(self, technology):
+    def __init__(self, technology: str):
         self.technology = technology
         if self.technology.upper() == 'UMTS':
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
             self.SD_fields_need_to_update = ['RNC Id', 'Sector Name', 'NodeB Longitude', 'NodeB Latitude',
                                              'Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt',
-                                             'Azimuth']
+                                             'Azimuth', 'Active']
             # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
             # in the below list will be changed
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
@@ -26,7 +27,7 @@ class AntennaDataReader(object):
 
         elif self.technology.upper() == 'LTE':
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
-            self.SD_fields_need_to_update = ['RNC Id', 'Sector Name', 'NodeB Longitude', 'NodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model']
+            self.SD_fields_need_to_update = ['RNC Id', 'Sector Name', 'NodeB Longitude', 'NodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Active']
             # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
             # in the below list will be changed
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
@@ -37,6 +38,19 @@ class AntennaDataReader(object):
             self.lte_carrier_fields_required = ['TAC', 'Sector Name', 'MCC', 'MNC', 'Sector Carrier Name']
         else:
             raise ("{} technology is not supported ".format(self.technology))
+
+    def csv_from_excel(self):
+        wb = xlrd.open_workbook('excel.xlsx')
+        sh = wb.sheet_by_name('Sheet1')
+        your_csv_file = open('your_csv_file.csv', 'w')
+        wr = csv.writer(your_csv_file, quoting=csv.QUOTE_ALL)
+
+        for rownum in range(sh.nrows):
+            wr.writerow(sh.row_values(rownum))
+
+        your_csv_file.close()
+
+    # runs the csv_from_excel function:
 
     def __validate_fields(self, csv_sd_planner_path):
         # csv_sd_planner_path = csv_sd_planner_path
@@ -153,9 +167,11 @@ class AntennaDataReader(object):
                 elif cell.v == self.cgi_file_fields_required[9]:
                     col_name_position[cell.v] = cell.c
                 elif str(cell.v).__contains__(self.cgi_file_fields_required[10]):
-                    print(str(cell.v))
+                    # print(str(cell.v))
                     col_name_position[self.cgi_file_fields_required[10]] = cell.c
                 elif cell.v == self.cgi_file_fields_required[11]:
+                    col_name_position[cell.v] = cell.c
+                elif cell.v == self.cgi_file_fields_required[12]:
                     col_name_position[cell.v] = cell.c
                 else:
                     pass
@@ -164,13 +180,22 @@ class AntennaDataReader(object):
 
             for row in rows_iter:  # accessing all data rows
                 col_name_data = {}  # dict for each data row
+                # print(row[22])
                 # print(row[3])  ==>  Cell(r=1, c=3, v='EKOL0000KONG')
 
                 for col_name, position in col_name_position.items():  # Seems a quadratic, but this iteration is
                     # constant in count
                     cell = row[position]  # getting the cell using cell_position as an index of row, it is a constant
                     # time operation, output like -> Cell(r=1, c=3, v='EKOL0000KONG')
-                    col_name_data[col_name] = cell.v
+                    if col_name == 'Band' and cell.v is not None:
+                        # print(int(cell.v))
+                        col_name_data[col_name] = int(cell.v)
+                    elif col_name == "Antenna Tilt-Electrical" and cell.v is not None and cell.v != 'NA':
+                        # print(cell.v)
+                        col_name_data[col_name] = int(cell.v)
+                    else:
+                        col_name_data[col_name] = cell.v
+                # Next line we are making the first field 'LTE_CGI' as key for each record
                 data_dict["{0}".format(col_name_data[self.cgi_file_fields_required[0]])] = col_name_data
         return data_dict
 
@@ -189,9 +214,9 @@ if __name__ == "__main__":
     #     print('{0}-{1}-{2}-{3}'.format(value['MCC'], value['MNC'], temp_l1[1], temp_l1[2]))
 
     cgi_file_dict = reader.read_gsi_file(CGI_file)
-    with open("cgi_file.json", 'a') as cgi_out_ob:
-        print(cgi_file_dict, file=cgi_out_ob)
-
+    # with open("cgi_file.json", 'a') as cgi_out_ob:
+    #     print(cgi_file_dict, file=cgi_out_ob)
+    print(cgi_file_dict)
     # planner_dict = reader.read_planner_file(planner_file)
     # one_row  = planner_dict['1160-EOR_23TD20_PUR-51_B']
     # print(one_row['Band'])

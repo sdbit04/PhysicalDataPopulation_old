@@ -45,6 +45,9 @@ class ProfileReader(object):
             for profile in os.listdir(model_dir_abs):
                 # print(profile)
                 profile_path_abs = os.path.join(model_dir_abs, profile)
+                # TODO if model_dir contain omni then antenna_model_profile_combination will be like IBS/profile-name
+                if str(model_dir).upper().__contains__('OMNI'):
+                    model_dir = 'IBS'
                 antenna_model_profile_combination = "{}/{}".format(model_dir, profile.rstrip(".txt"))
                 # print(antenna_model_profile_combination)
                 profile_file_data_dict = self.read_profile(profile_path_abs)

@@ -30,11 +30,12 @@ def run_physical_data_population(config_path_p):
     profile_root_path = configuration_ob["profile_root_path"]
     out_put_data_dict_dir = configuration_ob["out_put_data_dict_dir"]
     data_processor = DataProcessor(technology=technology)
-    out_put_data_dict = data_processor.update_sd_by_planner_step1(planning_file, sd_path, lte_carrier_file, cgi_file,
+    out_put_data_dict, report_dict = data_processor.update_sd_by_planner_step1(planning_file, sd_path, lte_carrier_file, cgi_file,
                                                                   profile_root_path_p=profile_root_path)
     # print(type(out_put_data_dict))
     # print(out_put_data_dict)
     data_writer(out_put_data_dict, out_put_data_dict_dir)
+    write_report(report_dict, out_put_data_dict_dir)
 
 
 def main_method():
