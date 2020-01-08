@@ -2,3 +2,4 @@ include readme.rst
 include requirements.txt
 include Physical_data_population/config/config_phy.ini
 include Physical_data_population/config/band_relation
+include Physical_data_population/temp_files

@@ -12,6 +12,23 @@ class DataProcessor(object):
         # We can have another data reader object if planner and SD are of different type
         # self.data_planner_object = self.data_reader_ob.read_planner_file()
 
+    def report_missing_attributes(self, report_dict, sd_input_row,sd_rnc_sector_key, report_count ):
+        missing_attributes = []
+        for index in range(2, 10):
+            field_name =self.data_reader_ob.SD_fields_need_to_update[index]
+            field_value = sd_input_row[self.data_reader_ob.SD_fields_need_to_update[index]]
+            print("field name is ={}".format(field_name))
+            print("field_value = {}".format(field_value))
+            if field_value is not None and len(str(field_value)) == 0:
+                print("adding field into missing attribute report {}".format(field_name))
+                missing_attributes.append(field_name)
+        print("length of missing_attribute = {}".format(missing_attributes))
+        if len(missing_attributes) != 0:
+            report_line = "RNC-Sector\t{0}\t missing attributes are {1}".format(
+                sd_rnc_sector_key, missing_attributes)
+            report_dict[report_count] = report_line
+
+
     def update_sd_by_planner_step1(self, input_planner_file_path, input_sd_file_path, input_lte_carrier_path,
                                    input_sgi_file_path, profile_root_path_p):
         sd_ob_out = {}
@@ -37,6 +54,10 @@ class DataProcessor(object):
                 matching_planner_input = planner_object[sd_rnc_sector_key]
             except KeyError:
                 print("Key {} not found into Planner ".format(sd_rnc_sector_key))
+                report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner file, process will look for lte_carrier, and GSI files".format(
+                    sd_rnc_sector_key)
+                report[r] = report_line
+                r += 1
                 # TODO need to add lookup with lte_carrier and SGI-file
                 try:
                     lte_carrier_input = lte_carrier_ob[sd_rnc_sector_key]
@@ -50,6 +71,10 @@ class DataProcessor(object):
                     report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner and not even in lte_carrier file".format(sd_rnc_sector_key)
                     report[r] = report_line
                     r += 1
+                    report_line = "RNC-Sector\t{0}\thas missing fields = NodeB Longitude, NodeB Latitude,Antenna Longitude, Antenna Latitude, Height, Mechanical DownTilt, Azimuth, Antenna Model".format(sd_rnc_sector_key)
+                    report[r] = report_line
+                    r += 1
+
                     sd_ob_out[n] = sd_input_row
                     n += 1
                 else:
@@ -59,9 +84,11 @@ class DataProcessor(object):
                         matching_cgi_data_input = sgi_file_ob[mcc_mnc_sector_carrier_key]
                     except KeyError:
                         print("Key {} was not found into CGI file".format(mcc_mnc_sector_carrier_key))
-                        report_line = "For RNC-Sector\t{0}\tthere was match in lte_carrier, but corresponding mcc_mnc_sector_carrier_key\t{1}\t not in GIS file,".format(
+                        report_line = "RNC-Sector\t{0}\tthere was match in lte_carrier, but corresponding ##MCC-MNC-SECTOR_CARRIER## key\t{1}\tnot in GIS file,".format(
                             sd_rnc_sector_key, mcc_mnc_sector_carrier_key)
                         report[r] = report_line
+                        r += 1
+                        self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
                         r += 1
                         sd_ob_out[n] = sd_input_row
                         n += 1
@@ -93,23 +120,29 @@ class DataProcessor(object):
                             antenna_model_profile = antenna_model_vs_profile_map[antenna_model_antenna_e_tilt_key]
                         except KeyError:
                             print("Profile {} was not found into source of profiles files".format(antenna_model_antenna_e_tilt_key))
-                            report_line = "For RNC-Sector\t{0}\tthere is a match in GSI file, but corresponding antenna-model/E-tilt/band\t{1}\thas no mathng profile file under profile root,".format(
+                            report_line = "RNC-Sector\t{0}\tthere is a match in GSI file, but corresponding ##ANTENNA-MODEL/E-Tilt/BAND## \t{1}\thas no mathng profile file under profile root,".format(
                                 sd_rnc_sector_key, antenna_model_antenna_e_tilt_key)
                             report[r] = report_line
                             r += 1
+                            self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
+                            r += 1
+                            print(report)
                             sd_ob_out[n] = sd_input_row
                             n += 1
                         else:
                             sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = antenna_model_profile
                             sd_ob_out[n] = sd_input_row
                             n += 1
+                            self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
+                            r += 1
+                            print(report)
             else:
                 # Now I have corresponding records from planner and SD, they are OrderDict object
                 planner_input_row = matching_planner_input
                 # print(type(planner_input_row))
                 # print("planner_input_row = {}".format(planner_input_row))
                 # print(type(sd_input_row))
-                # print("sd_input_row = {}".format(sd_input_row))
+                # print("sd_input_row = {}".fFor RNC-Sectorormat(sd_input_row))
                 # print("*********************")
                 sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = planner_input_row[self.data_reader_ob.planner_fields_required[2]]
                 sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = planner_input_row[self.data_reader_ob.planner_fields_required[3]]
@@ -134,6 +167,9 @@ class DataProcessor(object):
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = antenna_model_profile
                     sd_ob_out[n] = sd_input_row
                     n += 1
+
+                    self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
+
         return sd_ob_out, report
 
 
@@ -183,8 +219,7 @@ if __name__ == "__main__":
     profile_root_path = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Ant Model"
 
     DP = DataProcessor(technology=technology)
-    output, report = DP.update_sd_by_planner_step1(input_planner_file_path=planning_file_csv, input_sd_file_path=sd_path_csv, input_lte_carrier_path=lte_carrier_file_csv,
+    output, report_1 = DP.update_sd_by_planner_step1(input_planner_file_path=planning_file_csv, input_sd_file_path=sd_path_csv, input_lte_carrier_path=lte_carrier_file_csv,
                                    input_sgi_file_path=GSI_file_xlsb, profile_root_path_p=profile_root_path)
-
 
     print(output)

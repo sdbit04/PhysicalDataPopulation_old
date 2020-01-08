@@ -39,18 +39,15 @@ class AntennaDataReader(object):
         else:
             raise ("{} technology is not supported ".format(self.technology))
 
-    def csv_from_excel(self):
-        wb = xlrd.open_workbook('excel.xlsx')
-        sh = wb.sheet_by_name('Sheet1')
-        your_csv_file = open('your_csv_file.csv', 'w')
+    def csv_from_excel(self, xlsx_file_path, technology, csv_file_path):
+        wb = xlrd.open_workbook(xlsx_file_path)
+        sh = wb.sheet_by_name(technology)
+        your_csv_file = open(csv_file_path, 'w')
         wr = csv.writer(your_csv_file, quoting=csv.QUOTE_ALL)
 
         for rownum in range(sh.nrows):
             wr.writerow(sh.row_values(rownum))
-
         your_csv_file.close()
-
-    # runs the csv_from_excel function:
 
     def __validate_fields(self, csv_sd_planner_path):
         # csv_sd_planner_path = csv_sd_planner_path
