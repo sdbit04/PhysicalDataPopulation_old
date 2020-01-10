@@ -22,7 +22,11 @@ def main(input_nbr_p):
 
 # main(5)
 
-l1 = [1,2,3]
-print("{}".format(l1))
-print(len(l1))
+with open('D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Networks\\N1\\COMPLETE_CONFIGURATION-31102019-063948007 [+0200]6858253598689744_69\\lte-carriers.txt', 'r') as  file_ob:
+    all_lines = file_ob.readlines()
+    all_lines_iter = iter(all_lines)
+    next(all_lines_iter)
+    for line in all_lines_iter:
+        pass
+
 
