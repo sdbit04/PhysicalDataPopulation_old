@@ -12,7 +12,7 @@ class DataProcessor(object):
         # We can have another data reader object if planner and SD are of different type
         # self.data_planner_object = self.data_reader_ob.read_planner_file()
 
-    def report_missing_attributes(self, report_dict, sd_input_row,sd_rnc_sector_key, report_count ):
+    def report_missing_attributes(self, report_dict, sd_input_row,sd_rnc_sector_key ):
         missing_attributes = []
         for index in range(2, 10):
             field_name =self.data_reader_ob.SD_fields_need_to_update[index]
@@ -26,8 +26,7 @@ class DataProcessor(object):
         if len(missing_attributes) != 0:
             report_line = "RNC-Sector\t{0}\t missing attributes are {1}".format(
                 sd_rnc_sector_key, missing_attributes)
-            report_dict[report_count] = report_line
-
+            report_dict[sd_rnc_sector_key].append(report_line)
 
     def update_sd_by_planner_step1(self, input_planner_file_path, input_sd_file_path, input_lte_carrier_path,
                                    input_sgi_file_path, profile_root_path_p):
@@ -48,6 +47,7 @@ class DataProcessor(object):
         print("antenna_model_vs_profile_map from profile directory")
         # print(antenna_model_vs_profile_map)
         for sd_rnc_sector_key, sd_input_row in sd_object.items():
+            report[sd_rnc_sector_key] = []
             # take a key from SD-ob
             try:
                 # search for the key at planner-ob
@@ -56,7 +56,7 @@ class DataProcessor(object):
                 print("Key {} not found into Planner ".format(sd_rnc_sector_key))
                 report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner file, process will look for lte_carrier, and GSI files".format(
                     sd_rnc_sector_key)
-                report[r] = report_line
+                report[sd_rnc_sector_key].append(report_line)
                 r += 1
                 # TODO need to add lookup with lte_carrier and SGI-file
                 try:
@@ -69,10 +69,10 @@ class DataProcessor(object):
                             sd_rnc_sector_key))
 
                     report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner and not even in lte_carrier file".format(sd_rnc_sector_key)
-                    report[r] = report_line
+                    report[sd_rnc_sector_key].append(report_line)
                     r += 1
                     report_line = "RNC-Sector\t{0}\thas missing fields = NodeB Longitude, NodeB Latitude,Antenna Longitude, Antenna Latitude, Height, Mechanical DownTilt, Azimuth, Antenna Model".format(sd_rnc_sector_key)
-                    report[r] = report_line
+                    report[sd_rnc_sector_key].append(report_line)
                     r += 1
 
                     sd_ob_out[n] = sd_input_row
@@ -86,7 +86,7 @@ class DataProcessor(object):
                         print("Key {} was not found into CGI file".format(mcc_mnc_sector_carrier_key))
                         report_line = "RNC-Sector\t{0}\tthere was match in lte_carrier, but corresponding ##MCC-MNC-SECTOR_CARRIER## key\t{1}\tnot in GIS file,".format(
                             sd_rnc_sector_key, mcc_mnc_sector_carrier_key)
-                        report[r] = report_line
+                        report[sd_rnc_sector_key].append(report_line)
                         r += 1
                         self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
                         r += 1
@@ -209,17 +209,17 @@ def write_report(report_dict: dict, out_put_file_p):
             report_ob.write("{}\t{}\n".format(ind, line))
 
 
-if __name__ == "__main__":
-    technology = "LTE"
-    sd_path_csv = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Antennas_sd.txt"
-    planning_file_csv = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Planning_input_4G.txt"
-    lte_carrier_file_csv = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\lte-carriers.txt"
-    GSI_file_xlsb = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\4G GIS Data Kolkata.xlsb"
-    out_put_data_dict_dir = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\out_dir"
-    profile_root_path = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Ant Model"
-
-    DP = DataProcessor(technology=technology)
-    output, report_1 = DP.update_sd_by_planner_step1(input_planner_file_path=planning_file_csv, input_sd_file_path=sd_path_csv, input_lte_carrier_path=lte_carrier_file_csv,
-                                   input_sgi_file_path=GSI_file_xlsb, profile_root_path_p=profile_root_path)
-
-    print(output)
+# if __name__ == "__main__":
+#     technology = "LTE"
+#     sd_path_csv = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Antennas_sd.txt"
+#     planning_file_csv = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Planning_input_4G.txt"
+#     lte_carrier_file_csv = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\lte-carriers.txt"
+#     GSI_file_xlsb = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\New\\4G GIS Data Kolkata.xlsb"
+#     out_put_data_dict_dir = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\out_dir"
+#     profile_root_path = "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Ant Model"
+#
+#     DP = DataProcessor(technology=technology)
+#     output, report_1 = DP.update_sd_by_planner_step1(input_planner_file_path=planning_file_csv, input_sd_file_path=sd_path_csv, input_lte_carrier_path=lte_carrier_file_csv,
+#                                    input_sgi_file_path=GSI_file_xlsb, profile_root_path_p=profile_root_path)
+#
+#     print(output)

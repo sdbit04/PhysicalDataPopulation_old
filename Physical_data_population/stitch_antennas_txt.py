@@ -89,8 +89,8 @@ class FileStitcher(object):
         shutil.move(consolidated_lte_carrier_txt_temp, consolidated_lte_carrier_txt)
 
 
-if __name__ == "__main__":
-    file_stitcher = FileStitcher(base_directory, input_directory_list)
-    file_stitcher.stitch_antennas_txt()
-    file_stitcher.stitch_lte_carriers_txt()
+# if __name__ == "__main__":
+#     file_stitcher = FileStitcher(base_directory, input_directory_list)
+#     file_stitcher.stitch_antennas_txt()
+#     file_stitcher.stitch_lte_carriers_txt()
 
