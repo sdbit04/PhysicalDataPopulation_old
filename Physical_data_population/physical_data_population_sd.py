@@ -32,7 +32,7 @@ class DataProcessor(object):
                                    input_sgi_file_path, profile_root_path_p):
         sd_ob_out = {}
         report = {}
-        r = 0
+        # r = 0
         n = 0
         # travers through planner file
         planner_object = self.data_reader_ob.read_planner_file(input_planner_file_path)
@@ -57,7 +57,7 @@ class DataProcessor(object):
                 report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner file, process will look for lte_carrier, and GSI files".format(
                     sd_rnc_sector_key)
                 report[sd_rnc_sector_key].append(report_line)
-                r += 1
+
                 # TODO need to add lookup with lte_carrier and SGI-file
                 try:
                     lte_carrier_input = lte_carrier_ob[sd_rnc_sector_key]
@@ -87,9 +87,9 @@ class DataProcessor(object):
                         report_line = "RNC-Sector\t{0}\tthere was match in lte_carrier, but corresponding ##MCC-MNC-SECTOR_CARRIER## key\t{1}\tnot in GIS file,".format(
                             sd_rnc_sector_key, mcc_mnc_sector_carrier_key)
                         report[sd_rnc_sector_key].append(report_line)
-                        r += 1
-                        self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
-                        r += 1
+
+                        self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
+
                         sd_ob_out[n] = sd_input_row
                         n += 1
                     else:
@@ -122,20 +122,20 @@ class DataProcessor(object):
                             print("Profile {} was not found into source of profiles files".format(antenna_model_antenna_e_tilt_key))
                             report_line = "RNC-Sector\t{0}\tthere is a match in GSI file, but corresponding ##ANTENNA-MODEL/E-Tilt/BAND## \t{1}\thas no mathng profile file under profile root,".format(
                                 sd_rnc_sector_key, antenna_model_antenna_e_tilt_key)
-                            report[r] = report_line
-                            r += 1
-                            self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
-                            r += 1
-                            print(report)
+                            report[sd_rnc_sector_key].append(report_line)
+
+                            self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
+
+                            # print(report)
                             sd_ob_out[n] = sd_input_row
                             n += 1
                         else:
                             sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = antenna_model_profile
                             sd_ob_out[n] = sd_input_row
                             n += 1
-                            self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
-                            r += 1
-                            print(report)
+                            self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
+
+                            # print(report)
             else:
                 # Now I have corresponding records from planner and SD, they are OrderDict object
                 planner_input_row = matching_planner_input
@@ -168,7 +168,7 @@ class DataProcessor(object):
                     sd_ob_out[n] = sd_input_row
                     n += 1
 
-                    self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key, r)
+                    self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
 
         return sd_ob_out, report
 
@@ -206,6 +206,13 @@ def write_report(report_dict: dict, out_put_file_p):
     # with open("D:\D_drive_BACKUP\Study\PycharmProjects\PhysicalDataPopulation_pack\\report.txt", 'w') as report_ob:
     with open(report_file, 'w') as report_ob:
         for ind, line in report_dict.items():
+            if isinstance(line, list):
+                complete_line = ''
+                for speach in line:
+                    complete_line = "{}\t{}".format(complete_line, speach)
+                line = complete_line
+            else:
+                pass
             report_ob.write("{}\t{}\n".format(ind, line))
 
 

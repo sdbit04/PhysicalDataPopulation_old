@@ -24,17 +24,17 @@ def read_configuration(config_path_p):
         else:
             try:
                 technology = config_json_ob["technology"]
-                sd_path = config_json_ob["sd_path_csv"]
+                Network_directory_path = config_json_ob["Network_directory_path"]
                 planning_file = config_json_ob["planning_file_csv"]
-                lte_carrier_file = config_json_ob["lte_carrier_file_csv"]
+                Directory_names_for_NE = config_json_ob["Directory_names_for_NE"]
                 CGI_file = config_json_ob["GSI_file_xlsb"]
                 profile_root_path = config_json_ob["profile_root_path"]
                 out_put_data_dict_dir = config_json_ob["out_put_data_dict_dir"]
 
                 print(technology)
-                print(sd_path)
+                print(Network_directory_path)
                 print(planning_file)
-                print(lte_carrier_file)
+                print(Directory_names_for_NE)
                 print(CGI_file)
                 print(out_put_data_dict_dir)
                 print(profile_root_path)
