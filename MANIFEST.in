@@ -2,6 +2,6 @@ include readme.rst
 include requirements.txt
 include Physical_data_population/config/config_phy.ini
 include Physical_data_population/config/band_relation
-include Physical_data_population/temp_files
+include Physical_data_population/temp_files/
 include Physical_data_population/pypi/pyxlsb-1.0.6-py2.py3-none-any.whl
 include Physical_data_population/pypi/xlrd-1.2.0-py2.py3-none-any.whl
