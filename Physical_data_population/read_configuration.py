@@ -42,13 +42,13 @@ def read_configuration(config_path_p):
                 print(planning_file)
             except KeyError as planning_file_e:
                 planning_or_gis = "{}{}".format(planning_or_gis, 'NP')
-                print(planning_file_e)
+                print("Not getting {}".format(planning_file_e))
             try:
                 CGI_file = config_json_ob["GSI_file_xlsb"]
                 print(CGI_file)
             except KeyError as CGI_file_e:
                 planning_or_gis = "{}{}".format(planning_or_gis, 'NG')
-                print(CGI_file_e)
+                print("Not getting {}".format(CGI_file_e))
             try:
                 profile_root_path = config_json_ob["profile_root_path"]
                 print(profile_root_path)
@@ -60,9 +60,14 @@ def read_configuration(config_path_p):
             except KeyError as out_put_data_dict_dir_e:
                 raise out_put_data_dict_dir_e
             time.sleep(1)
+            if planning_or_gis == "NPNG":
+                raise ValueError("Neither Planner nor GIS file was provided, stopping the process")
             return config_json_ob, planning_or_gis
 
-# if __name__ == "__main__":
-#     config_path = 'config\\config_phy.ini'
-#     config_json_ob = read_configuration(config_path)
+
+if __name__ == "__main__":
+    config_path = 'config\\config_phy.ini'
+    config_json_ob, p_or_g = read_configuration(config_path)
+    print(p_or_g)
+
 
