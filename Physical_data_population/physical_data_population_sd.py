@@ -61,8 +61,18 @@ class DataProcessor(object):
                 # TODO need to add lookup with lte_carrier and SGI-file
                 try:
                     lte_carrier_input = lte_carrier_ob[sd_rnc_sector_key]
-                    required_part_of_sector_carrier = str(lte_carrier_input['Sector Carrier Name']).split('-')
-                    mcc_mnc_sector_carrier_key = '{0}-{1}-{2}-{3}'.format(lte_carrier_input['MCC'], lte_carrier_input['MNC'], required_part_of_sector_carrier[1], required_part_of_sector_carrier[2])
+                    sector_carrier_name = str(lte_carrier_input['Sector Carrier Name'])
+                    required_part_of_sector_carrier = sector_carrier_name.split('-')
+                    try:
+                        required_part_of_sector_carrier_1= required_part_of_sector_carrier[1]
+                        required_part_of_sector_carrier_2 = required_part_of_sector_carrier[2]
+                    except IndexError:
+                        print("Incorrect format of sector_carrier_name {}".format(sector_carrier_name))
+                        sd_ob_out[n] = sd_input_row
+                        n += 1
+                        continue
+                    else:
+                        mcc_mnc_sector_carrier_key = '{0}-{1}-{2}-{3}'.format(lte_carrier_input['MCC'], lte_carrier_input['MNC'], required_part_of_sector_carrier_1, required_part_of_sector_carrier_2)
                 except KeyError:
                     print(
                         "Key {} not even found into lte_carrier, so not updating physical data for this sector".format(
@@ -70,10 +80,10 @@ class DataProcessor(object):
 
                     report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner and not even in lte_carrier file".format(sd_rnc_sector_key)
                     report[sd_rnc_sector_key].append(report_line)
-                    r += 1
+
                     report_line = "RNC-Sector\t{0}\thas missing fields = NodeB Longitude, NodeB Latitude,Antenna Longitude, Antenna Latitude, Height, Mechanical DownTilt, Azimuth, Antenna Model".format(sd_rnc_sector_key)
                     report[sd_rnc_sector_key].append(report_line)
-                    r += 1
+
 
                     sd_ob_out[n] = sd_input_row
                     n += 1

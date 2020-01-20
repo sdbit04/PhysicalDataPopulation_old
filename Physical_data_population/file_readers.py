@@ -31,7 +31,7 @@ class AntennaDataReader(object):
             # TODO:Sometime 'Sector name' is populated as 'eNodeBname' in planner file. then the 2nd element
             # in the below list will be changed
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
-            self.planner_fields_required = ['TAC id', 'eNodeB Name', 'eNodeB Longitude', 'eNodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical', 'Band']
+            self.planner_fields_required = ['TAC', 'eNodeB Name', 'eNodeB Longitude', 'eNodeB Latitude','Antenna Longitude', 'Antenna Latitude', 'Height', 'Mechanical DownTilt', 'Azimuth', 'Antenna Model', 'Antenna Tilt-Electrical', 'Band']
             # Note - Please don't insert any value into the below lists, the index of the fields are used in program
             # TODO based on formula lat long calculation will be done from GIS
             self.cgi_file_fields_required = ['LTE CGI', 'dummy', 'Longitude', 'Latitude', 'Longitude', 'Latitude',                       'Antenna Height (m)', 'Antenna Tilt-Mechanical', 'Azimuth', 'Antenna  Model', 'Antenna Tilt-Electrical', 'Band', 'Status Active / Locked', 'Site Type']
