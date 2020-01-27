@@ -64,10 +64,20 @@ class DataProcessor(object):
                     sector_carrier_name = str(lte_carrier_input['Sector Carrier Name'])
                     required_part_of_sector_carrier = sector_carrier_name.split('-')
                     try:
-                        required_part_of_sector_carrier_1= required_part_of_sector_carrier[1]
+                        required_part_of_sector_carrier_1 = required_part_of_sector_carrier[1]
                         required_part_of_sector_carrier_2 = required_part_of_sector_carrier[2]
                     except IndexError:
                         print("Incorrect format of sector_carrier_name {}".format(sector_carrier_name))
+                        # TODO update the row by populating required fields by blank as no match found
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[5]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[6]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[7]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[10]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
                         sd_ob_out[n] = sd_input_row
                         n += 1
                         continue
@@ -84,7 +94,15 @@ class DataProcessor(object):
                     report_line = "RNC-Sector\t{0}\thas missing fields = NodeB Longitude, NodeB Latitude,Antenna Longitude, Antenna Latitude, Height, Mechanical DownTilt, Azimuth, Antenna Model".format(sd_rnc_sector_key)
                     report[sd_rnc_sector_key].append(report_line)
 
-
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[5]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[6]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[7]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[10]] = None
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
                     sd_ob_out[n] = sd_input_row
                     n += 1
                 else:
@@ -99,7 +117,15 @@ class DataProcessor(object):
                         report[sd_rnc_sector_key].append(report_line)
 
                         self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
-
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[5]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[6]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[7]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[10]] = None
+                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
                         sd_ob_out[n] = sd_input_row
                         n += 1
                     else:
@@ -177,9 +203,7 @@ class DataProcessor(object):
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = antenna_model_profile
                     sd_ob_out[n] = sd_input_row
                     n += 1
-
                     self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
-
         return sd_ob_out, report
 
 

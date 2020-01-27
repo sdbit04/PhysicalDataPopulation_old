@@ -206,7 +206,7 @@ if __name__ == "__main__":
     reader = AntennaDataReader(technology='LTE')
     # lte_carrier_dict_out_r = reader.read_lte_carrier(lte_carrier_path=lte_carrier)
     # print(lte_carrier_dict_out_r)
-    # for value in lte_carrier_dict_out_r.values():
+    # for value in lte_carrier_dict_out_r.values():not found into Planner
     #     temp_l1 = str(value['Sector Carrier Name']).split('-')
     #     print('{0}-{1}-{2}-{3}'.format(value['MCC'], value['MNC'], temp_l1[1], temp_l1[2]))
 
