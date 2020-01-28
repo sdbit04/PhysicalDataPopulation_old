@@ -60,7 +60,7 @@ class FileStitcher(object):
         print(self.temp_dir)
         consolidated_antennas_txt_temp = "{}\\{}".format(self.temp_dir, "antennas_temp.txt")
         consolidated_antennas_txt = "{}\\{}".format(self.temp_dir, "antennas.txt")
-        # Directly copy the first file at temp_file directory
+        # Directly copy the first file at temp_files directory
         shutil.copy(self.antennas_txt_files_list[0], consolidated_antennas_txt_temp)
         for antennas_txt_index in range(1, len(self.antennas_txt_files_list)):
             with open(consolidated_antennas_txt_temp, 'a') as temp_antennas_file_ob:
@@ -76,7 +76,7 @@ class FileStitcher(object):
         print(self.temp_dir)
         consolidated_lte_carrier_txt_temp = "{}\\{}".format(self.temp_dir, "lte_carrier_temp.txt")
         consolidated_lte_carrier_txt = "{}\\{}".format(self.temp_dir, "lte_carriers.txt")
-        # Directly copy the first file at temp_file directory
+        # Directly copy the first file at temp_files directory
         shutil.copy(self.lte_carriers_files_list[0], consolidated_lte_carrier_txt_temp)
         for lte_carrier_txt_index in range(1, len(self.lte_carriers_files_list)):
             with open(consolidated_lte_carrier_txt_temp, 'a') as temp_antennas_file_ob:
