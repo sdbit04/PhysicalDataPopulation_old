@@ -83,6 +83,7 @@ class DataProcessor(object):
                         continue
                     else:
                         mcc_mnc_sector_carrier_key = '{0}-{1}-{2}-{3}'.format(lte_carrier_input['MCC'], lte_carrier_input['MNC'], required_part_of_sector_carrier_1, required_part_of_sector_carrier_2)
+                ####################################################
                 except KeyError:
                     print(
                         "Key {} not even found into lte_carrier, so not updating physical data for this sector".format(
@@ -155,6 +156,7 @@ class DataProcessor(object):
                         try:
                             antenna_model_profile = antenna_model_vs_profile_map[antenna_model_antenna_e_tilt_key]
                         except KeyError:
+                            sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
                             print("Profile {} was not found into source of profiles files".format(antenna_model_antenna_e_tilt_key))
                             report_line = "RNC-Sector\t{0}\tthere is a match in GSI file, but corresponding ##ANTENNA-MODEL/E-Tilt/BAND## \t{1}\thas no mathng profile file under profile root,".format(
                                 sd_rnc_sector_key, antenna_model_antenna_e_tilt_key)
@@ -170,8 +172,6 @@ class DataProcessor(object):
                             sd_ob_out[n] = sd_input_row
                             n += 1
                             self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
-
-                            # print(report)
             else:
                 # Now I have corresponding records from planner and SD, they are OrderDict object
                 planner_input_row = matching_planner_input
@@ -196,6 +196,7 @@ class DataProcessor(object):
                 try:
                     antenna_model_profile = antenna_model_vs_profile_map[antenna_model_antenna_e_tilt_key]
                 except KeyError:
+                    sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
                     print("Profile {} was not found into source of profiles files".format(antenna_model_antenna_e_tilt_key))
                     sd_ob_out[n] = sd_input_row
                     n += 1
