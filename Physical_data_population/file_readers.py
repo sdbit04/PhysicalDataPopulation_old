@@ -1,6 +1,23 @@
+
+try:
+    import pyxlsb
+except ImportError:
+    print("No pyxlsb, installaing ")
+    # import pip
+    from pip._internal import main
+    main(['install', 'pypi\\pyxlsb-1.0.6-py2.py3-none-any.whl', 'pypi\\xlrd-1.2.0-py2.py3-none-any.whl'])
+    import pyxlsb
+try:
+    import xlrd
+    from xlrd import *
+    print("imported xlrd ")
+except ImportError:
+    print("No xlrd, installaing ")
+    # import pip
+    from pip._internal import main
+    main(['install', 'pypi\\xlrd-1.2.0-py2.py3-none-any.whl'])
+    from xlrd import *
 import csv
-from pyxlsb import *
-import xlrd
 
 
 class AntennaDataReader(object):

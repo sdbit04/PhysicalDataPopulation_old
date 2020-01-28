@@ -1,5 +1,6 @@
 import json
 import time
+import traceback
 
 
 def read_configuration(config_path_p):
@@ -9,15 +10,15 @@ def read_configuration(config_path_p):
         try:
             config_json_ob = json.load(config_ob)
         except json.decoder.JSONDecodeError:
-            print("""Please check config_phy.ini file, make sure you have "sd_path","planning_file", "out_put_data_dict_dir","profile_root_path" with their value, each key and value should be in " ",
+            print("""Please check config_phy.ini file, make sure you have "sd_path","planning_file", "out_put_data_dict_dir", "profile_root_path" with their value, each key and value should be in " ",
             Example: 
-            {"technology":"LTE",
+            {"technology": "LTE",
             "Network_directory_path": "D:\\D_drive_BACKUP\\Study\\PycharmProjects\\PhysicalDataPopulation\\Input_data_deep\\Network",
             "Directory_names_for_NE": "ZTE_LTE_KOL_24, ZTE_LTE_KOL_25",
-            "planning_file_csv" :"D:\\Input_data_deep\\Planning_input.txt",            
-            "GSI_file_xlsb" :"D:\\Input_data_deep\\SGI_input.xlsb",
+            "planning_file_csv": "D:\\Input_data_deep\\Planning_input.txt",            
+            "GSI_file_xlsb": "D:\\Input_data_deep\\SGI_input.xlsb",
             "profile_root_path": "D:\\Input_data_deep\\Ant Model"
-            "out_put_data_dict_dir" :"D:\\out_dir",
+            "out_put_data_dict_dir": "D:\\out_dir",
             }""")
             time.sleep(1)
             raise json.decoder.JSONDecodeError
@@ -43,12 +44,14 @@ def read_configuration(config_path_p):
             except KeyError as planning_file_e:
                 planning_or_gis = "{}{}".format(planning_or_gis, 'NP')
                 print("Not getting {}".format(planning_file_e))
+                print(traceback.print_exc())
             try:
                 CGI_file = config_json_ob["GSI_file_xlsb"]
                 print(CGI_file)
             except KeyError as CGI_file_e:
                 planning_or_gis = "{}{}".format(planning_or_gis, 'NG')
                 print("Not getting {}".format(CGI_file_e))
+
             try:
                 profile_root_path = config_json_ob["profile_root_path"]
                 print(profile_root_path)
@@ -66,8 +69,7 @@ def read_configuration(config_path_p):
 
 
 if __name__ == "__main__":
-    config_path = 'config\\config_phy.ini'
+    config_path = './config/config_phy.ini'
     config_json_ob, p_or_g = read_configuration(config_path)
     print(p_or_g)
-
 

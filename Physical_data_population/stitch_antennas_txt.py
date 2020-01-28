@@ -16,12 +16,12 @@ def filter_dir(dir_name: str):
 
 
 def find_recent_complete_conf_for_each_ne(network_base_directory, NE_directory_list):
-    network_dir_compl_conf = {}  # We will populate this dict and return it.
+    network_dir_vs_compl_conf = {}  # We will populate this dict and return it.
     for directory in NE_directory_list:
         abs_network_directory = os.path.join(network_base_directory, directory)
         compl_conf_dirs_list = filter(filter_dir, os.listdir(abs_network_directory))
         # recent_compl_dir = compl_conf_dirs_list.__next__()
-        recent_date_time: int = 1112017064015000
+        recent_date_time: int = 000
         recent_compl_dir_under_this_NE = None
         for compl_dir in compl_conf_dirs_list:  # this loop is running as nest of each network-NE directory.
             compl_dir_numeric_part = compl_dir.split("[")[0].strip(" ").split("-")
@@ -29,9 +29,8 @@ def find_recent_complete_conf_for_each_ne(network_base_directory, NE_directory_l
             if date_n_time_part > recent_date_time:
                 recent_date_time = date_n_time_part
                 recent_compl_dir_under_this_NE = compl_dir
-
-        network_dir_compl_conf[abs_network_directory] = recent_compl_dir_under_this_NE
-    return network_dir_compl_conf
+        network_dir_vs_compl_conf[abs_network_directory] = recent_compl_dir_under_this_NE
+    return network_dir_vs_compl_conf
 
 
 def get_list_of_antennas_and_lte_carriers_txt_files_to_be_stitched(network_base_directory, NE_directory_list):
