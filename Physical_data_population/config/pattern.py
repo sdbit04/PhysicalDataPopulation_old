@@ -102,13 +102,21 @@ def get_only_number(input_string): # number = '234,4,5j6;6;. -6734@ui'
 if __name__ == "__main__":
     # print(reverse1("swapan"))
     # print(reverse('Swapan'))
-    L1 = [1,3,5,8,14,18]
+    # L1 = [1,3,5,8,14,18]
     # L2 = [2,6,13,20]
     # print(merge_sorted_arrays(L1, L2))
     # called_func('b')
     # value = "".join(str(i) if i >= 3 else "" for i in L1)
     # print(value)
-    number = '234,4,5j6;6;. -6734@ui'
-    nbr = get_only_number(number)
-    print(str(nbr))
+    # number = '234,4,5j6;6;. -6734@ui'
+    # nbr = get_only_number(number)
+    # print(str(nbr))
 
+    sector_carrier = 230925570
+    result = sector_carrier/ 256
+    int_part = sector_carrier // 256
+
+    remainder = sector_carrier.__mod__(256)
+    print(result)
+    print(int_part)
+    print(remainder)

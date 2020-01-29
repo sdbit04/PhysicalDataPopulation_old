@@ -143,7 +143,7 @@ class AntennaDataReader(object):
             rows_iter = iter(sheet.rows())
             head_row = next(rows_iter)  # Header record only
             for cell in head_row:  # Speed linearly depends on number of columns into the GSI file
-                if cell.v == self.cgi_file_fields_required[0]:
+                if cell.v == self.cgi_file_fields_required[0].strip('-'):
                     col_name_position[cell.v] = cell.c
                 elif cell.v == self.cgi_file_fields_required[1]:
                     col_name_position[cell.v] = cell.c

@@ -15,14 +15,14 @@ class DataProcessor(object):
     def report_missing_attributes(self, report_dict, sd_input_row,sd_rnc_sector_key ):
         missing_attributes = []
         for index in range(2, 10):
-            field_name =self.data_reader_ob.SD_fields_need_to_update[index]
+            field_name = self.data_reader_ob.SD_fields_need_to_update[index]
             field_value = sd_input_row[self.data_reader_ob.SD_fields_need_to_update[index]]
-            print("field name is ={}".format(field_name))
+            print("field name is = {}".format(field_name))
             print("field_value = {}".format(field_value))
-            if field_value is not None and len(str(field_value)) == 0:
+            if field_value is None or len(str(field_value)) == 0:
                 print("adding field into missing attribute report {}".format(field_name))
                 missing_attributes.append(field_name)
-        print("length of missing_attribute = {}".format(missing_attributes))
+        print("length of missing_attribute = {}".format(len(missing_attributes)))
         if len(missing_attributes) != 0:
             report_line = "RNC-Sector\t{0}\t missing attributes are {1}".format(
                 sd_rnc_sector_key, missing_attributes)
@@ -61,40 +61,34 @@ class DataProcessor(object):
                 # TODO need to add lookup with lte_carrier and SGI-file
                 try:
                     lte_carrier_input = lte_carrier_ob[sd_rnc_sector_key]
-                    sector_carrier_name = str(lte_carrier_input['Sector Carrier Name'])
-                    required_part_of_sector_carrier = sector_carrier_name.split('-')
-                    try:
+                    print("Key {} was FOUND into lte_carrier".format(sd_rnc_sector_key))
+                    mcc = lte_carrier_input['MCC']
+                    mnc = lte_carrier_input['MNC']
+                    sector_carrier_name = (lte_carrier_input['Sector Carrier Name'])
+                    if "-" in sector_carrier_name:
+                        required_part_of_sector_carrier = sector_carrier_name.split('-')
                         required_part_of_sector_carrier_1 = required_part_of_sector_carrier[1]
                         required_part_of_sector_carrier_2 = required_part_of_sector_carrier[2]
-                    except IndexError:
-                        print("Incorrect format of sector_carrier_name {}".format(sector_carrier_name))
-                        # TODO update the row by populating required fields by blank as no match found
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[5]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[6]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[7]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[10]] = None
-                        sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
-                        sd_ob_out[n] = sd_input_row
-                        n += 1
-                        continue
+                        mcc_mnc_sector_carrier_key = '{0}{1}{2}{3}'.format(mcc, mnc, required_part_of_sector_carrier_1,
+                                                                           required_part_of_sector_carrier_2)
                     else:
-                        mcc_mnc_sector_carrier_key = '{0}-{1}-{2}-{3}'.format(lte_carrier_input['MCC'], lte_carrier_input['MNC'], required_part_of_sector_carrier_1, required_part_of_sector_carrier_2)
+                        print("Found NOKIA GIS format of sector_carrier_name = {}".format(sector_carrier_name))
+                        sector_carrier_name = int(sector_carrier_name)
+                        int_part = sector_carrier_name // 256
+                        required_part_of_sector_carrier_1 = str(int_part)
+                        remainder = sector_carrier_name.__mod__(256)
+                        required_part_of_sector_carrier_2 = str(remainder)
+                        mcc_mnc_sector_carrier_key = '{0}{1}{2}{3}'.format(mcc, mnc, required_part_of_sector_carrier_1,
+                                                                           required_part_of_sector_carrier_2)
                 ####################################################
                 except KeyError:
                     print(
                         "Key {} not even found into lte_carrier, so not updating physical data for this sector".format(
                             sd_rnc_sector_key))
-
                     report_line = "RNC-Sector\t{0}\thas No match in 1st-level-planner and not even in lte_carrier file".format(sd_rnc_sector_key)
                     report[sd_rnc_sector_key].append(report_line)
-
                     report_line = "RNC-Sector\t{0}\thas missing fields = NodeB Longitude, NodeB Latitude,Antenna Longitude, Antenna Latitude, Height, Mechanical DownTilt, Azimuth, Antenna Model".format(sd_rnc_sector_key)
                     report[sd_rnc_sector_key].append(report_line)
-
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = None
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = None
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = None
@@ -104,10 +98,11 @@ class DataProcessor(object):
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = None
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[10]] = None
                     sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
+                    self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
                     sd_ob_out[n] = sd_input_row
                     n += 1
                 else:
-                    print("Key {} was FOUND into lte_carrier".format(sd_rnc_sector_key))
+
                     print("Key for next level CGI file lookup is {}".format(mcc_mnc_sector_carrier_key))
                     try:
                         matching_cgi_data_input = sgi_file_ob[mcc_mnc_sector_carrier_key]
@@ -116,8 +111,6 @@ class DataProcessor(object):
                         report_line = "RNC-Sector\t{0}\tthere was match in lte_carrier, but corresponding ##MCC-MNC-SECTOR_CARRIER## key\t{1}\tnot in GIS file,".format(
                             sd_rnc_sector_key, mcc_mnc_sector_carrier_key)
                         report[sd_rnc_sector_key].append(report_line)
-
-                        self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[2]] = None
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[3]] = None
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[4]] = None
@@ -127,6 +120,7 @@ class DataProcessor(object):
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[8]] = None
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[10]] = None
                         sd_input_row[self.data_reader_ob.SD_fields_need_to_update[9]] = None
+                        self.report_missing_attributes(report, sd_input_row, sd_rnc_sector_key)
                         sd_ob_out[n] = sd_input_row
                         n += 1
                     else:
